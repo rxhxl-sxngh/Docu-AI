@@ -1,0 +1,29 @@
+{
+  "name": "capstone_project",
+  "version": "1.0.0",
+  "description": "Texas A&M University Spring 2025 Capston Project for CODVO.AI",
+  "main": "clent/public/index.js",
+  "scripts": {
+    "server": "nodemon --quiet server",
+    "client": "npm start --prefix client",
+    "dev": "concurrently \"npm run server\" \"npm run client\""
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bat2492/Capstone_Project.git"
+  },
+  "keywords": [
+    "AI",
+    "ML"
+  ],
+  "author": "Brandon Thomas, Rahul Singh, Nolan Williams, Samad Alnawaz",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/bat2492/Capstone_Project/issues"
+  },
+  "homepage": "https://github.com/bat2492/Capstone_Project#readme",
+  "devDependencies": {
+    "concurrently": "^9.1.2",
+    "nodemon": "^3.1.9"
+  }
+}
