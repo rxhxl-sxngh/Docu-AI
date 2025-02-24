@@ -1,11 +1,11 @@
 import React, {useEffect, useState} from 'react'
 
-function App() {
+function Results() {
     return(
         <div>
-            <p>Start</p>
+            <p>Results</p>
         </div>
     )
 }
 
-export default App
+export default Results
