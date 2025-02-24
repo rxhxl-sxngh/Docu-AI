@@ -4,18 +4,19 @@ import Queue from './queue/queue'
 import Logs from './logs/logs'
 import Results from './results/results'
 import Upload from './upload/upload'
+import Analytics from './analytics/analytics'
 
 
 
 function App() {
     return(
         <div>
+            <Analytics/>
             <Dashboard/>
             <Queue/>
             <Logs/>
             <Results/>
             <Upload/>
-
         </div>
         
     )
