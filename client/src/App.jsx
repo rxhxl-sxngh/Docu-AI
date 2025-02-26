@@ -11,12 +11,12 @@ import Analytics from './analytics/analytics'
 function App() {
     return(
         <div>
-            <Analytics/>
             <Dashboard/>
             <Queue/>
             <Logs/>
             <Results/>
             <Upload/>
+            <Analytics/>
         </div>
         
     )

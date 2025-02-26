@@ -1,6 +1,7 @@
-import React, {useEffect, useState} from 'react'
+import React, {useEffect, useState} from 'react';
+import '../base.css';
 
-function User_Profile() {
+function UserProfile() {
     //{/*<!-- User Profile Section -->*/}
     return(
         <div class="p-6 border-t border-neutral-200/30">
@@ -15,6 +16,6 @@ function User_Profile() {
             </div>
         </div>
     )
-}
+};
 
-export default User_Profile
+export default UserProfile
