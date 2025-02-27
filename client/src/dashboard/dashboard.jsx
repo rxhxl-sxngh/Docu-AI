@@ -27,8 +27,8 @@ function tmp(){
                 </div>
             </div>
 
-            {/*<!-- Stats Grid -->*/}
             <StatsGrid/>
+            <RecentActivity/>
         </div>
     )
 }
@@ -119,6 +119,58 @@ function StatsGrid(){
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6"/>
                     </svg>
                     <span class="text-sm">-2% decrease</span>
+                </div>
+            </div>
+        </div>
+    )
+}
+
+function RecentActivity(){
+    return(
+        <div class="bg-white rounded-lg border border-neutral-200/30 mb-6">
+            <div class="p-6">
+                <h2 class="text-lg font-semibold text-neutral-800 mb-4">Recent Activity</h2>
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead>
+                            <tr class="text-left border-b border-neutral-200/30">
+                                <th class="pb-3 text-sm font-semibold text-neutral-600">Invoice ID</th>
+                                <th class="pb-3 text-sm font-semibold text-neutral-600">Vendor</th>
+                                <th class="pb-3 text-sm font-semibold text-neutral-600">Amount</th>
+                                <th class="pb-3 text-sm font-semibold text-neutral-600">Status</th>
+                                <th class="pb-3 text-sm font-semibold text-neutral-600">Time</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="border-b border-neutral-200/30">
+                                <td class="py-4 text-sm text-neutral-800">INV-2023-001</td>
+                                <td class="py-4 text-sm text-neutral-800">Tech Corp Ltd</td>
+                                <td class="py-4 text-sm text-neutral-800">$1,234.56</td>
+                                <td class="py-4">
+                                    <span class="px-2 py-1 text-xs font-medium text-green-700 bg-green-100 rounded-full">Processed</span>
+                                </td>
+                                <td class="py-4 text-sm text-neutral-600">2 min ago</td>
+                            </tr>
+                            <tr class="border-b border-neutral-200/30">
+                                <td class="py-4 text-sm text-neutral-800">INV-2023-002</td>
+                                <td class="py-4 text-sm text-neutral-800">Global Services Inc</td>
+                                <td class="py-4 text-sm text-neutral-800">$2,567.00</td>
+                                <td class="py-4">
+                                    <span class="px-2 py-1 text-xs font-medium text-yellow-700 bg-yellow-100 rounded-full">Processing</span>
+                                </td>
+                                <td class="py-4 text-sm text-neutral-600">5 min ago</td>
+                            </tr>
+                            <tr class="border-b border-neutral-200/30">
+                                <td class="py-4 text-sm text-neutral-800">INV-2023-003</td>
+                                <td class="py-4 text-sm text-neutral-800">Supply Chain Co</td>
+                                <td class="py-4 text-sm text-neutral-800">$876.50</td>
+                                <td class="py-4">
+                                    <span class="px-2 py-1 text-xs font-medium text-red-700 bg-red-100 rounded-full">Failed</span>
+                                </td>
+                                <td class="py-4 text-sm text-neutral-600">15 min ago</td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
