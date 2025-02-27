@@ -1,5 +1,4 @@
 import React, {useEffect, useState} from 'react'
-import UserProfile from './user_profile'
 
 function Dashboard() {
     /*return(
@@ -8,12 +7,8 @@ function Dashboard() {
             <UserProfile/>
         </div>
     )*/
-   return(tmp())
-}
-
-function tmp(){
     return(
-        <div>
+        <section id="dashboard" class="p-6">
             {/*<!-- Header -->*/}
             <div class="flex justify-between items-center mb-6">
                 <h1 class="text-2xl font-bold text-neutral-800">Invoice Processing Dashboard</h1>
@@ -29,7 +24,8 @@ function tmp(){
 
             <StatsGrid/>
             <RecentActivity/>
-        </div>
+            <PerformanceMetrics/>
+        </section>
     )
 }
 
@@ -177,4 +173,22 @@ function RecentActivity(){
     )
 }
 
+function PerformanceMetrics(){
+    return(
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div class="bg-white p-6 rounded-lg border border-neutral-200/30">
+                <h2 class="text-lg font-semibold text-neutral-800 mb-4">Processing Time</h2>
+                <div class="h-64 flex items-center justify-center text-neutral-500">
+                    [Processing Time Chart Placeholder]
+                </div>
+            </div>
+            <div class="bg-white p-6 rounded-lg border border-neutral-200/30">
+                <h2 class="text-lg font-semibold text-neutral-800 mb-4">Accuracy Metrics</h2>
+                <div class="h-64 flex items-center justify-center text-neutral-500">
+                    [Accuracy Metrics Chart Placeholder]
+                </div>
+            </div>
+        </div>
+    )
+}
 export default Dashboard
