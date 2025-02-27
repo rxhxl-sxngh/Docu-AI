@@ -2,19 +2,21 @@ import React, {useEffect, useState} from 'react'
 
 function Upload() {
     return(
-        <div class="max-w-4xl mx-auto">
-            {/*<!-- Header -->*/}
-            <div class="mb-8">
-                <h1 class="text-2xl font-bold text-neutral-800 mb-2">Document Upload</h1>
-                <p class="text-neutral-600">Upload invoice documents for automated processing and data extraction</p>
+        <section id="upload" class="p-6">
+            <div class="max-w-4xl mx-auto">
+                {/*<!-- Header -->*/}
+                <div class="mb-8">
+                    <h1 class="text-2xl font-bold text-neutral-800 mb-2">Document Upload</h1>
+                    <p class="text-neutral-600">Upload invoice documents for automated processing and data extraction</p>
+                </div>
+
+                {/*<!-- Upload Area -->*/}
+                <UploadArea/>
+
+                {/*<!-- Upload Queue -->*/}
+                <UploadQueue/>
             </div>
-
-            {/*<!-- Upload Area -->*/}
-            <UploadArea/>
-
-            {/*<!-- Upload Queue -->*/}
-            <UploadQueue/>
-        </div>
+        </section>
     )
 }
 
