@@ -11,12 +11,14 @@ function App() {
     return(
         <div>
             <Sidebar/>
-            <Dashboard/>
-            <Queue/>
-            <Logs/>
-            <Results/>
-            <Upload/>
-            <Analytics/>
+            <main class="flex-1 ml-0 lg:ml-64 min-h-screen overflow-y-auto bg-[#E5E7EB]">
+                <Dashboard/>
+                <Queue/>
+                <Logs/>
+                <Results/>
+                <Upload/>
+                <Analytics/>
+            </main>
         </div>
         
     )
