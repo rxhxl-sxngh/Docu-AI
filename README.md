@@ -1,4 +1,4 @@
-# Capstone_Project
+# AI Invoice Processing App
 
 ## running
 
