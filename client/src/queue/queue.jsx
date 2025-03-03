@@ -3,6 +3,7 @@ import React from 'react';
 // Header Component
 const QueueHeader = () => {
   return (
+    
     <div className="mb-6 flex justify-between items-center">
       <div>
         <h1 className="text-2xl font-bold text-neutral-800">Processing Queue</h1>
@@ -250,7 +251,7 @@ const QueueTable = () => {
 // Main Queue Component
 const Queue = () => {
   return (
-    <section id="processing-queue" className="p-6">
+    <section id="queue" className="p-6">
       <QueueHeader />
       <QueueStats />
       <QueueTable />

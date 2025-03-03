@@ -145,7 +145,7 @@ const ResultsHeader = () => {
   // Main Results Component
   const Results = () => {
     return (
-      <section id="extraction-results" className="p-6">
+      <section id="results" className="p-6">
         <ResultsHeader />
         
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
