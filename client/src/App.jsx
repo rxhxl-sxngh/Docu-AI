@@ -6,6 +6,7 @@ import Results from './results/results'
 import Upload from './upload/upload'
 import Analytics from './analytics/analytics'
 import Sidebar from './Sidebar/Sidebar'
+import SystemSettings from './system_settings/sys_settings'
 
 function App() {
     return(
@@ -18,6 +19,7 @@ function App() {
                 <Results/>
                 <Logs/>
                 <Analytics/>
+                <SystemSettings/>
             </main>
         </div>
         
