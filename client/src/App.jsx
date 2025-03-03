@@ -7,6 +7,7 @@ import Upload from './upload/upload'
 import Analytics from './analytics/analytics'
 import Sidebar from './Sidebar/Sidebar'
 import SystemSettings from './system_settings/sys_settings'
+import UserManagement from './user_management/UserManagement'
 
 function App() {
     return(
@@ -20,6 +21,7 @@ function App() {
                 <Logs/>
                 <Analytics/>
                 <SystemSettings/>
+                <UserManagement/>
             </main>
         </div>
         
