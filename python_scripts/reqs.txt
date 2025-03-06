@@ -1,0 +1,9 @@
+paddlepaddle 
+paddleocr 
+fitz 
+setuptools 
+opencv-python
+opencv-python-headless
+opencv-contrib-python
+ffmpeg
+frontend

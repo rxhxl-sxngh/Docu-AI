@@ -1,5 +1,4 @@
 from paddleocr import PaddleOCR
-from matplotlib import pyplot as plt
 import sys
 
 def Process_File(file_path):
