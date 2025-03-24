@@ -1,9 +1,10 @@
-paddlepaddle 
+pyMuPDF
+paddlepaddle==2.6.2 
 paddleocr 
-fitz 
 setuptools 
 opencv-python
 opencv-python-headless
 opencv-contrib-python
 ffmpeg
 frontend
+tools
