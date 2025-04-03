@@ -4,8 +4,8 @@
   "description": "Texas A&M University Spring 2025 Capston Project for CODVO.AI",
   "main": "clent/public/index.js",
   "scripts": {
-    "server": "nodemon --quiet server",
-    "client": "npm start --prefix client",
+    "server": "cd server && uvicorn app.main:app --reload",
+    "client": "cd client && npm start",
     "dev": "concurrently \"npm run server\" \"npm run client\""
   },
   "repository": {
