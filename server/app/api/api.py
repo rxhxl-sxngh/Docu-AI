@@ -1,8 +1,9 @@
 from fastapi import APIRouter
 
-from app.api.endpoints import documents, queue, results, users
+from app.api.endpoints import documents, queue, results, users, login
 
 api_router = APIRouter()
+api_router.include_router(login.router, prefix="/login", tags=["login"])
 api_router.include_router(documents.router, prefix="/documents", tags=["documents"])
 api_router.include_router(queue.router, prefix="/queue", tags=["queue"])
 api_router.include_router(results.router, prefix="/results", tags=["results"])
