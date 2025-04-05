@@ -25,5 +25,10 @@ yarn-debug.log*
 yarn-error.log*
 node_modules
 
+# Python bytecode
+__pycache__/
+*.py[cod]
+*$py.class
+
 setup_project.py
 project_notes
