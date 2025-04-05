@@ -1,7 +1,19 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+a.active {
+    position: relative;
+}
 
+a.active::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 4px;
+    background-color: #4F46E5; /* Purple color */
+}
 * {
     -ms-overflow-style: none;  /* IE and Edge */
     scrollbar-width: none;     /* Firefox */
