@@ -13,7 +13,10 @@ class Document(Base):
     uploaded_date = Column(DateTime(timezone=True), server_default=func.now())
     modified_date = Column(DateTime(timezone=True), onupdate=func.now())
     status = Column(String, default="pending")  # pending, processing, completed, failed
+    file_path = Column(String, nullable=True)  # Path to the stored file
+    file_size = Column(Integer, nullable=True)  # Size in bytes
     
     # Relationships
     user = relationship("User", back_populates="documents")
     results = relationship("ProcessingResult", back_populates="document")
+    queue_items = relationship("Queue", back_populates="document")
