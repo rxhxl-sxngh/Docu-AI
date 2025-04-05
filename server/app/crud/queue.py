@@ -1,36 +1,70 @@
 from typing import List, Optional
+from datetime import datetime
 
 from sqlalchemy.orm import Session
 
 from app.crud.base import CRUDBase
-from app.models.queue import ProcessingQueue
+from app.models.queue import Queue
 from app.schemas.queue import QueueCreate, QueueUpdate
 
 
-class CRUDQueue(CRUDBase[ProcessingQueue, QueueCreate, QueueUpdate]):
-    def get_by_document_id(self, db: Session, *, document_id: int) -> Optional[ProcessingQueue]:
-        return db.query(ProcessingQueue).filter(ProcessingQueue.document_id == document_id).first()
-    
-    def get_by_status(
-        self, db: Session, *, status: str, skip: int = 0, limit: int = 100
-    ) -> List[ProcessingQueue]:
+class CRUDQueue(CRUDBase[Queue, QueueCreate, QueueUpdate]):
+    def get_multi_by_owner(
+        self, db: Session, *, owner_id: int, skip: int = 0, limit: int = 100
+    ) -> List[Queue]:
         return (
             db.query(self.model)
-            .filter(ProcessingQueue.status == status)
+            .join(self.model.document)
+            .filter(self.model.document.uploaded_by == owner_id)
             .offset(skip)
             .limit(limit)
             .all()
         )
-
-    def create_with_document(
-        self, db: Session, *, obj_in: QueueCreate, document_id: int
-    ) -> ProcessingQueue:
-        obj_in_data = obj_in.dict()
-        db_obj = self.model(**obj_in_data, document_id=document_id)
-        db.add(db_obj)
-        db.commit()
-        db.refresh(db_obj)
+    
+    def update_status(
+        self, db: Session, *, queue_id: int, status: str, error_message: Optional[str] = None
+    ) -> Queue:
+        db_obj = db.query(self.model).filter(self.model.id == queue_id).first()
+        if db_obj:
+            db_obj.status = status
+            if error_message:
+                db_obj.error_message = error_message
+            db.add(db_obj)
+            db.commit()
+            db.refresh(db_obj)
         return db_obj
+    
+    def update_process_start_time(
+        self, db: Session, *, queue_id: int
+    ) -> Queue:
+        db_obj = db.query(self.model).filter(self.model.id == queue_id).first()
+        if db_obj:
+            db_obj.process_start_time = datetime.now()
+            db.add(db_obj)
+            db.commit()
+            db.refresh(db_obj)
+        return db_obj
+    
+    def update_process_end_time(
+        self, db: Session, *, queue_id: int
+    ) -> Queue:
+        db_obj = db.query(self.model).filter(self.model.id == queue_id).first()
+        if db_obj:
+            db_obj.process_end_time = datetime.now()
+            db.add(db_obj)
+            db.commit()
+            db.refresh(db_obj)
+        return db_obj
+    
+    def get_next_for_processing(
+        self, db: Session
+    ) -> Optional[Queue]:
+        return (
+            db.query(self.model)
+            .filter(self.model.status == "pending")
+            .order_by(self.model.priority.desc(), self.model.created_date.asc())
+            .first()
+        )
 
 
-queue = CRUDQueue(ProcessingQueue)
+queue = CRUDQueue(Queue)
