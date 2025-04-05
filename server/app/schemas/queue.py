@@ -33,7 +33,7 @@ class QueueInDBBase(QueueBase):
     error_message: Optional[str] = None
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 # Properties to return to client
