@@ -21,10 +21,10 @@ class Settings(BaseSettings):
         return v
 
     # Database config
-    POSTGRES_SERVER: str = "localhost"
-    POSTGRES_USER: str = "invoice_app"
-    POSTGRES_PASSWORD: str = "secure_password"
-    POSTGRES_DB: str = "invoice_processing"
+    POSTGRES_SERVER: str
+    POSTGRES_USER: str
+    POSTGRES_PASSWORD: str
+    POSTGRES_DB: str
     DATABASE_URI: Optional[PostgresDsn] = None
 
     @field_validator("DATABASE_URI", mode="before")
@@ -44,8 +44,8 @@ class Settings(BaseSettings):
         )
 
     # First superuser
-    FIRST_SUPERUSER: str = "admin@example.com"
-    FIRST_SUPERUSER_PASSWORD: str = "password"
+    FIRST_SUPERUSER: str
+    FIRST_SUPERUSER_PASSWORD: str
 
     class Config:
         case_sensitive = True
