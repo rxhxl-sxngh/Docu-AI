@@ -22,8 +22,8 @@ class Settings(BaseSettings):
 
     # Database config
     POSTGRES_SERVER: str = "localhost"
-    POSTGRES_USER: str = "postgres"
-    POSTGRES_PASSWORD: str = "postgres"
+    POSTGRES_USER: str = "invoice_app"
+    POSTGRES_PASSWORD: str = "secure_password"
     POSTGRES_DB: str = "invoice_processing"
     DATABASE_URI: Optional[PostgresDsn] = None
 
@@ -42,6 +42,10 @@ class Settings(BaseSettings):
             host=data.get("POSTGRES_SERVER"),
             path=f"/{data.get('POSTGRES_DB') or ''}",
         )
+
+    # First superuser
+    FIRST_SUPERUSER: str = "admin@example.com"
+    FIRST_SUPERUSER_PASSWORD: str = "password"
 
     class Config:
         case_sensitive = True
