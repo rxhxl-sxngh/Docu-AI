@@ -4,7 +4,9 @@ from sqlalchemy.orm import sessionmaker
 
 from app.core.config import settings
 
-engine = create_engine(settings.DATABASE_URI, pool_pre_ping=True)
+# Convert the PostgresDsn object to a string
+database_uri = str(settings.DATABASE_URI)
+engine = create_engine(database_uri, pool_pre_ping=True)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 Base = declarative_base()
