@@ -1,3 +1,4 @@
+# server/app/api/endpoints/documents.py
 import os
 import shutil
 from typing import Any, List
@@ -10,6 +11,7 @@ from sqlalchemy.orm import Session
 from app import crud, models, schemas
 from app.api import deps
 from app.core.config import settings
+from app.services.processing_service import process_document_task
 
 router = APIRouter()
 
@@ -72,11 +74,14 @@ async def upload_document(
             status="pending",
             priority=1  # Default priority
         )
-        crud.queue.create(db=db, obj_in=queue_in)
+        queue_item = crud.queue.create(db=db, obj_in=queue_in)
         
         # Start processing in the background
-        # (This would typically call your processing task)
-        # background_tasks.add_task(process_document, document.id)
+        background_tasks.add_task(
+            process_document_task,
+            document_id=document.id,
+            queue_id=queue_item.id
+        )
         
         return document
         
@@ -209,6 +214,7 @@ def reprocess_document(
     db: Session = Depends(deps.get_db),
     id: int,
     priority: int = 1,
+    background_tasks: BackgroundTasks,
     current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
     """
@@ -230,6 +236,13 @@ def reprocess_document(
         status="pending",
         priority=priority
     )
-    crud.queue.create(db=db, obj_in=queue_in)
+    queue_item = crud.queue.create(db=db, obj_in=queue_in)
+    
+    # Start processing in the background
+    background_tasks.add_task(
+        process_document_task,
+        document_id=document.id,
+        queue_id=queue_item.id
+    )
     
     return document
