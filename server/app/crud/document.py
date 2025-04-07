@@ -1,7 +1,9 @@
+# server/app/crud/document.py
 from typing import List, Optional
 
 from fastapi.encoders import jsonable_encoder
 from sqlalchemy.orm import Session
+from sqlalchemy import func
 
 from app.crud.base import CRUDBase
 from app.models.document import Document
@@ -25,6 +27,7 @@ class CRUDDocument(CRUDBase[Document, DocumentCreate, DocumentUpdate]):
         return (
             db.query(self.model)
             .filter(Document.uploaded_by == owner_id)
+            .order_by(Document.uploaded_date.desc())
             .offset(skip)
             .limit(limit)
             .all()
@@ -40,6 +43,41 @@ class CRUDDocument(CRUDBase[Document, DocumentCreate, DocumentUpdate]):
             db.commit()
             db.refresh(db_obj)
         return db_obj
+    
+    def count_by_status(
+        self, db: Session, *, status: str
+    ) -> int:
+        return db.query(func.count(self.model.id)).filter(self.model.status == status).scalar() or 0
+    
+    def count_by_status_and_owner(
+        self, db: Session, *, status: str, owner_id: int
+    ) -> int:
+        return (
+            db.query(func.count(self.model.id))
+            .filter(self.model.status == status, self.model.uploaded_by == owner_id)
+            .scalar() or 0
+        )
+    
+    def get_recent(
+        self, db: Session, *, limit: int = 5
+    ) -> List[Document]:
+        return (
+            db.query(self.model)
+            .order_by(self.model.uploaded_date.desc())
+            .limit(limit)
+            .all()
+        )
+    
+    def get_recent_by_owner(
+        self, db: Session, *, owner_id: int, limit: int = 5
+    ) -> List[Document]:
+        return (
+            db.query(self.model)
+            .filter(self.model.uploaded_by == owner_id)
+            .order_by(self.model.uploaded_date.desc())
+            .limit(limit)
+            .all()
+        )
 
 
 document = CRUDDocument(Document)

@@ -1,7 +1,9 @@
+# server/app/crud/queue.py
 from typing import List, Optional
 from datetime import datetime
 
 from sqlalchemy.orm import Session
+from sqlalchemy import func
 
 from app.crud.base import CRUDBase
 from app.models.queue import Queue
@@ -15,7 +17,8 @@ class CRUDQueue(CRUDBase[Queue, QueueCreate, QueueUpdate]):
         return (
             db.query(self.model)
             .join(self.model.document)
-            .filter(self.model.document.uploaded_by == owner_id)
+            .filter(self.model.document.has(uploaded_by=owner_id))
+            .order_by(self.model.created_date.desc())
             .offset(skip)
             .limit(limit)
             .all()
@@ -64,6 +67,34 @@ class CRUDQueue(CRUDBase[Queue, QueueCreate, QueueUpdate]):
             .filter(self.model.status == "pending")
             .order_by(self.model.priority.desc(), self.model.created_date.asc())
             .first()
+        )
+    
+    def get_by_document(
+        self, db: Session, *, document_id: int
+    ) -> List[Queue]:
+        return (
+            db.query(self.model)
+            .filter(self.model.document_id == document_id)
+            .order_by(self.model.created_date.desc())
+            .all()
+        )
+    
+    def count_by_status(
+        self, db: Session, *, status: str
+    ) -> int:
+        return db.query(func.count(self.model.id)).filter(self.model.status == status).scalar() or 0
+    
+    def count_by_status_and_owner(
+        self, db: Session, *, status: str, owner_id: int
+    ) -> int:
+        return (
+            db.query(func.count(self.model.id))
+            .join(self.model.document)
+            .filter(
+                self.model.status == status,
+                self.model.document.has(uploaded_by=owner_id)
+            )
+            .scalar() or 0
         )
 
 

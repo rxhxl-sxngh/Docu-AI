@@ -1,7 +1,9 @@
+# server/app/crud/result.py
 from typing import List, Optional
 from datetime import datetime
 
 from sqlalchemy.orm import Session
+from sqlalchemy import func
 
 from app.crud.base import CRUDBase
 from app.models.result import ProcessingResult
@@ -15,7 +17,8 @@ class CRUDResult(CRUDBase[ProcessingResult, ResultCreate, ResultUpdate]):
         return (
             db.query(self.model)
             .join(self.model.document)
-            .filter(self.model.document.uploaded_by == owner_id)
+            .filter(self.model.document.has(uploaded_by=owner_id))
+            .order_by(self.model.created_date.desc())
             .offset(skip)
             .limit(limit)
             .all()
@@ -42,7 +45,64 @@ class CRUDResult(CRUDBase[ProcessingResult, ResultCreate, ResultUpdate]):
         return (
             db.query(self.model)
             .filter(self.model.document_id == document_id)
+            .order_by(self.model.created_date.desc())
             .first()
+        )
+    
+    def get_avg_confidence(
+        self, db: Session
+    ) -> float:
+        result = db.query(func.avg(self.model.confidence_score)).scalar()
+        return float(result) if result else 0.0
+    
+    def get_avg_processing_time(
+        self, db: Session
+    ) -> float:
+        result = db.query(func.avg(self.model.processing_time)).scalar()
+        return float(result) if result else 0.0
+    
+    def get_avg_confidence_by_owner(
+        self, db: Session, *, owner_id: int
+    ) -> float:
+        result = (
+            db.query(func.avg(self.model.confidence_score))
+            .join(self.model.document)
+            .filter(self.model.document.has(uploaded_by=owner_id))
+            .scalar()
+        )
+        return float(result) if result else 0.0
+    
+    def get_avg_processing_time_by_owner(
+        self, db: Session, *, owner_id: int
+    ) -> float:
+        result = (
+            db.query(func.avg(self.model.processing_time))
+            .join(self.model.document)
+            .filter(self.model.document.has(uploaded_by=owner_id))
+            .scalar()
+        )
+        return float(result) if result else 0.0
+    
+    def get_recent(
+        self, db: Session, *, limit: int = 5
+    ) -> List[ProcessingResult]:
+        return (
+            db.query(self.model)
+            .order_by(self.model.created_date.desc())
+            .limit(limit)
+            .all()
+        )
+    
+    def get_recent_by_owner(
+        self, db: Session, *, owner_id: int, limit: int = 5
+    ) -> List[ProcessingResult]:
+        return (
+            db.query(self.model)
+            .join(self.model.document)
+            .filter(self.model.document.has(uploaded_by=owner_id))
+            .order_by(self.model.created_date.desc())
+            .limit(limit)
+            .all()
         )
 
 
