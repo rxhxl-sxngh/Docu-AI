@@ -4,6 +4,7 @@ from typing import Any
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
+from sqlalchemy.sql import func
 
 from app import crud, models, schemas
 from app.api import deps
@@ -34,7 +35,7 @@ def login_access_token(
         )
     
     # Update last login time
-    user.last_login = models.func.now()
+    user.last_login = func.now()
     db.add(user)
     db.commit()
     
