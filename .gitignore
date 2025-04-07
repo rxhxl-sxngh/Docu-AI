@@ -27,6 +27,8 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 node_modules
+uploads
+db_set_up_notes
 
 # Python bytecode
 __pycache__/
