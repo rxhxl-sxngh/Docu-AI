@@ -40,7 +40,7 @@ class Settings(BaseSettings):
             username=data.get("POSTGRES_USER"),
             password=data.get("POSTGRES_PASSWORD"),
             host=data.get("POSTGRES_SERVER"),
-            path=f"/{data.get('POSTGRES_DB') or ''}",
+            path=f"{data.get('POSTGRES_DB') or ''}",
         )
 
     # First superuser
