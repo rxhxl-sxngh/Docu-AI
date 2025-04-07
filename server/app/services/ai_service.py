@@ -50,7 +50,7 @@ class AIService:
         return {
             "extracted_data": extracted_data,
             "confidence_score": confidence_score,
-            "raw_ocr_result": ocr_result
+            # "raw_ocr_result": ocr_result
         }
     
     def _extract_invoice_data(self, ocr_result: List[Dict[str, Any]]) -> Dict[str, Any]:
