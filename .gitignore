@@ -13,6 +13,7 @@
 # production
 /build
 venv
+sample_invoices
 
 # misc
 .DS_Store
