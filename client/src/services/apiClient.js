@@ -20,7 +20,9 @@ const apiClient = {
       headers: {
         'Accept': 'application/json',
         ...(auth ? authHeader() : {})
-      }
+      },
+      credentials: 'include',
+      mode: 'cors'
     });
     
     return handleResponse(response);
@@ -41,6 +43,8 @@ const apiClient = {
         'Accept': 'application/json',
         ...(auth ? authHeader() : {})
       },
+      credentials: 'include',
+      mode: 'cors',
       body: JSON.stringify(data)
     });
     
@@ -63,6 +67,7 @@ const apiClient = {
         },
         // Include credentials for cookies/sessions
         credentials: 'include',
+        mode: 'cors',
         body: new URLSearchParams(data)
       });
       
@@ -92,6 +97,8 @@ const apiClient = {
         'Accept': 'application/json',
         ...(auth ? authHeader() : {})
       },
+      credentials: 'include',
+      mode: 'cors',
       body: JSON.stringify(data)
     });
     
@@ -110,7 +117,9 @@ const apiClient = {
       headers: {
         'Accept': 'application/json',
         ...(auth ? authHeader() : {})
-      }
+      },
+      credentials: 'include',
+      mode: 'cors'
     });
     
     return handleResponse(response);
