@@ -1,5 +1,5 @@
 pyMuPDF
-paddlepaddle==2.6.2 
+paddlepaddle
 paddleocr 
 setuptools 
 opencv-python
