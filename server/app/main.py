@@ -42,6 +42,7 @@ if settings.BACKEND_CORS_ORIGINS:
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],
+        expose_headers=["Content-Type", "Content-Length", "Content-Disposition"],
     )
 
 # Include API router
