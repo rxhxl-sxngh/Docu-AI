@@ -1,8 +1,12 @@
-// File: client/src/services/apiClient.js
-import { authHeader } from './authService';
+// client/src/services/apiClient.js
+import { authHeader, logout } from './authService';
 
 // Define the API base URL
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000';
+
+// Helper methods to get base URL and auth headers
+const getBaseUrl = () => API_BASE_URL;
+const getAuthHeader = (auth = true) => auth ? authHeader() : {};
 
 /**
  * Handles API requests with proper error handling and authentication
@@ -15,17 +19,22 @@ const apiClient = {
    * @returns {Promise<any>} - Response data
    */
   async get(url, auth = true) {
-    const response = await fetch(`${API_BASE_URL}${url}`, {
-      method: 'GET',
-      headers: {
-        'Accept': 'application/json',
-        ...(auth ? authHeader() : {})
-      },
-      credentials: 'include',
-      mode: 'cors'
-    });
-    
-    return handleResponse(response);
+    try {
+      const response = await fetch(`${API_BASE_URL}${url}`, {
+        method: 'GET',
+        headers: {
+          'Accept': 'application/json',
+          ...(auth ? authHeader() : {})
+        },
+        credentials: 'include',
+        mode: 'cors'
+      });
+      
+      return handleResponse(response);
+    } catch (error) {
+      console.error(`GET request to ${url} failed:`, error);
+      throw new Error(`Network error: ${error.message}`);
+    }
   },
   
   /**
@@ -36,19 +45,52 @@ const apiClient = {
    * @returns {Promise<any>} - Response data
    */
   async post(url, data, auth = true) {
-    const response = await fetch(`${API_BASE_URL}${url}`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-        ...(auth ? authHeader() : {})
-      },
-      credentials: 'include',
-      mode: 'cors',
-      body: JSON.stringify(data)
-    });
-    
-    return handleResponse(response);
+    try {
+      const response = await fetch(`${API_BASE_URL}${url}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          ...(auth ? authHeader() : {})
+        },
+        credentials: 'include',
+        mode: 'cors',
+        body: JSON.stringify(data)
+      });
+      
+      return handleResponse(response);
+    } catch (error) {
+      console.error(`POST request to ${url} failed:`, error);
+      throw new Error(`Network error: ${error.message}`);
+    }
+  },
+  
+  /**
+   * Upload a file with form data
+   * @param {string} url - The endpoint URL (without base)
+   * @param {FormData} formData - The FormData object with file
+   * @param {boolean} auth - Whether to include auth header
+   * @returns {Promise<any>} - Response data
+   */
+  async uploadFile(url, formData, auth = true) {
+    try {
+      const response = await fetch(`${API_BASE_URL}${url}`, {
+        method: 'POST',
+        headers: {
+          // Don't set Content-Type as it will be set automatically with boundary
+          'Accept': 'application/json',
+          ...(auth ? authHeader() : {})
+        },
+        credentials: 'include',
+        mode: 'cors',
+        body: formData
+      });
+      
+      return handleResponse(response);
+    } catch (error) {
+      console.error(`File upload to ${url} failed:`, error);
+      throw new Error(`Network error: ${error.message}`);
+    }
   },
   
   /**
@@ -65,19 +107,14 @@ const apiClient = {
           'Content-Type': 'application/x-www-form-urlencoded',
           'Accept': 'application/json'
         },
-        // Include credentials for cookies/sessions
         credentials: 'include',
         mode: 'cors',
         body: new URLSearchParams(data)
       });
       
-      // Log information for debugging
-      console.log("Response status:", response.status);
-      console.log("Response headers:", Object.fromEntries([...response.headers]));
-      
       return handleResponse(response);
     } catch (error) {
-      console.error("Fetch error:", error);
+      console.error(`Form POST request to ${url} failed:`, error);
       throw new Error(`Network error: ${error.message}`);
     }
   },
@@ -90,19 +127,24 @@ const apiClient = {
    * @returns {Promise<any>} - Response data
    */
   async put(url, data, auth = true) {
-    const response = await fetch(`${API_BASE_URL}${url}`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-        ...(auth ? authHeader() : {})
-      },
-      credentials: 'include',
-      mode: 'cors',
-      body: JSON.stringify(data)
-    });
-    
-    return handleResponse(response);
+    try {
+      const response = await fetch(`${API_BASE_URL}${url}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          ...(auth ? authHeader() : {})
+        },
+        credentials: 'include',
+        mode: 'cors',
+        body: JSON.stringify(data)
+      });
+      
+      return handleResponse(response);
+    } catch (error) {
+      console.error(`PUT request to ${url} failed:`, error);
+      throw new Error(`Network error: ${error.message}`);
+    }
   },
   
   /**
@@ -112,17 +154,22 @@ const apiClient = {
    * @returns {Promise<any>} - Response data
    */
   async delete(url, auth = true) {
-    const response = await fetch(`${API_BASE_URL}${url}`, {
-      method: 'DELETE',
-      headers: {
-        'Accept': 'application/json',
-        ...(auth ? authHeader() : {})
-      },
-      credentials: 'include',
-      mode: 'cors'
-    });
-    
-    return handleResponse(response);
+    try {
+      const response = await fetch(`${API_BASE_URL}${url}`, {
+        method: 'DELETE',
+        headers: {
+          'Accept': 'application/json',
+          ...(auth ? authHeader() : {})
+        },
+        credentials: 'include',
+        mode: 'cors'
+      });
+      
+      return handleResponse(response);
+    } catch (error) {
+      console.error(`DELETE request to ${url} failed:`, error);
+      throw new Error(`Network error: ${error.message}`);
+    }
   }
 };
 
@@ -132,45 +179,49 @@ const apiClient = {
  * @returns {Promise<any>} - Parsed response data
  */
 async function handleResponse(response) {
+  // Check for authentication failures
+  if (response.status === 401) {
+    // Unauthorized - token expired or invalid
+    console.warn('Authentication failure. Logging out...');
+    logout();
+    throw new Error('Your session has expired. Please log in again.');
+  }
+  
   try {
-    // Check if response is JSON before parsing
+    // Check if response is JSON
     const contentType = response.headers.get('content-type');
-    console.log("Content-Type:", contentType);
     
     if (contentType && contentType.includes('application/json')) {
-      try {
-        const data = await response.json();
-        console.log("Response data:", data);
-        
-        if (!response.ok) {
-          const error = data.detail || response.statusText;
-          throw new Error(error);
-        }
-        
-        return data;
-      } catch (jsonError) {
-        console.error("JSON parsing error:", jsonError);
-        // If JSON parsing fails, fall back to text
-        const text = await response.text();
-        console.log("Response as text:", text.substring(0, 200));
-        throw new Error(`Failed to parse JSON: ${jsonError.message}`);
+      const data = await response.json();
+      
+      if (!response.ok) {
+        // API error with details
+        const errorMessage = data.detail || response.statusText;
+        throw new Error(errorMessage);
       }
+      
+      return data;
     } else {
       // Handle non-JSON responses
       const text = await response.text();
-      console.log("Non-JSON response:", text.substring(0, 200));
       
       if (!response.ok) {
         throw new Error(`Server returned ${response.status}: ${response.statusText}`);
       }
       
-      // Return text for non-JSON responses
       return text;
     }
   } catch (error) {
-    console.error("Response handling error:", error);
+    if (error.name === 'SyntaxError') {
+      console.error('JSON parsing error:', error);
+      throw new Error('Failed to parse server response');
+    }
     throw error;
   }
 }
+
+// Export helper methods with the apiClient
+apiClient.getBaseUrl = getBaseUrl;
+apiClient.getAuthHeader = getAuthHeader;
 
 export default apiClient;
