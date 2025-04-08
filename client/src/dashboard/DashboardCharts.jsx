@@ -7,11 +7,13 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Responsive
 export const ProcessingTimeChart = ({ data }) => {
   // Format data for chart
   const chartData = [
-    { name: 'Document Classification', time: data?.documentClassification || 0.8 },
-    { name: 'Data Extraction', time: data?.dataExtraction || 1.5 },
-    { name: 'Validation', time: data?.validation || 0.6 },
-    { name: 'Database Operations', time: data?.databaseOperations || 0.3 }
+    { name: 'Text Recognition (OCR)', time: data?.textRecognition},
+    { name: 'Entity Extraction (NLP)', time: data?.entityExtraction},
+    { name: 'Database Operations', time: data?.databaseOperations}
   ];
+
+  // Calculate total processing time
+  const totalTime = chartData.reduce((sum, item) => sum + item.time, 0);
 
   return (
     <div className="h-64">
@@ -21,9 +23,12 @@ export const ProcessingTimeChart = ({ data }) => {
           margin={{ top: 20, right: 10, left: 10, bottom: 20 }}
         >
           <CartesianGrid strokeDasharray="3 3" />
-          <XAxis dataKey="name" tick={{ fontSize: 10 }} angle={-45} textAnchor="end" height={60} />
-          <YAxis label={{ value: 'Time (seconds)', angle: -90, position: 'insideLeft' }} />
-          <Tooltip formatter={(value) => [`${value} sec`, 'Processing Time']} />
+          <XAxis dataKey="name" tick={{ fontSize: 10 }} angle={-45} textAnchor="end" height={80} />
+          <YAxis label={{ value: 'Time (seconds)', angle: -90, position: 'inside' }} />
+          <Tooltip 
+            formatter={(value) => [`${value.toFixed(3)} sec (${((value/totalTime)*100).toFixed(1)}%)`, 'Processing Time']} 
+          />
+          {/* <Legend /> */}
           <Bar dataKey="time" fill="#6366F1" barSize={30} />
         </BarChart>
       </ResponsiveContainer>
