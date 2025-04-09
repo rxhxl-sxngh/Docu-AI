@@ -1,7 +1,7 @@
-# server/app/services/processing_service.py
 import logging
 from datetime import datetime
 from typing import Optional
+import time
 
 from sqlalchemy.orm import Session
 
@@ -18,11 +18,19 @@ logger = logging.getLogger(__name__)
 def process_document_task(document_id: int, queue_id: int) -> None:
     """
     Background task to process document using OCR and AI extraction
+    with detailed timing for each stage
     """
     # Create a new database session
     db = SessionLocal()
     
+    # Initialize timing variables
+    ocr_time = 0.0
+    nlp_extraction_time = 0.0
+    db_operation_time = 0.0
+    
     try:
+        # Track database time
+        db_start = time.time()
         # Update queue status to processing
         queue_item = crud.queue.update_status(db, queue_id=queue_id, status="processing")
         logger.info(f"Processing started for document {document_id}, queue item {queue_id}")
@@ -32,27 +40,43 @@ def process_document_task(document_id: int, queue_id: int) -> None:
         
         # Update process start time
         queue_item = crud.queue.update_process_start_time(db, queue_id=queue_id)
+        db_end = time.time()
+        db_operation_time += (db_end - db_start)
         
         # Process document
         try:
             # Get document path
+            db_start = time.time()
             document = crud.document.get(db, id=document_id)
+            db_end = time.time()
+            db_operation_time += (db_end - db_start)
+            
             if not document or not document.file_path:
                 raise ValueError(f"Document {document_id} not found or file path is missing")
             
+            start_time = time.time()
+            
             # Process document with OCR
-            start_time = datetime.now()
             logger.info(f"Starting OCR processing for document {document_id}")
+            ocr_start = time.time()
             ocr_result = ocr_service.process_document(document.file_path)
+            ocr_end = time.time()
+            ocr_time = ocr_end - ocr_start
+            logger.info(f"OCR completed in {ocr_time:.2f} seconds")
             
-            # Process with AI service for data extraction
-            logger.info(f"Starting AI extraction for document {document_id}")
+            # Process with AI service for NLP extraction
+            logger.info(f"Starting NLP entity extraction for document {document_id}")
+            extraction_start = time.time()
             ai_result = ai_service.process_document(document.file_path)
-            end_time = datetime.now()
+            extraction_end = time.time()
+            nlp_extraction_time = extraction_end - extraction_start
+            logger.info(f"NLP extraction completed in {nlp_extraction_time:.2f} seconds")
             
-            # Calculate processing time
-            processing_time = (end_time - start_time).total_seconds()
-            logger.info(f"Document {document_id} processed in {processing_time:.2f} seconds")
+            end_time = time.time()
+            
+            # Calculate total processing time
+            total_processing_time = (end_time - start_time)
+            logger.info(f"Document {document_id} processed in {total_processing_time:.2f} seconds")
             
             # Extract data from AI result
             extracted_data = ai_result.get("extracted_data", {})
@@ -62,7 +86,10 @@ def process_document_task(document_id: int, queue_id: int) -> None:
             invoice_date = parse_date(extracted_data.get("invoice_date"))
             due_date = parse_date(extracted_data.get("due_date"))
             
-            # Create result in database
+            # Database storage stage
+            db_start = time.time()
+            
+            # Create result in database with detailed timing information
             result_in = schemas.ResultCreate(
                 document_id=document_id,
                 invoice_number=extracted_data.get("invoice_number"),
@@ -71,7 +98,10 @@ def process_document_task(document_id: int, queue_id: int) -> None:
                 due_date=due_date,
                 total_amount=extracted_data.get("total_amount"),
                 confidence_score=confidence_score,
-                processing_time=processing_time,
+                processing_time=total_processing_time,
+                ocr_time=ocr_time,
+                nlp_extraction_time=nlp_extraction_time,
+                db_operation_time=db_operation_time,  # This will be updated below
                 raw_extraction_data={
                     "ocr_result": ocr_result,
                     "ai_result": ai_result
@@ -90,6 +120,15 @@ def process_document_task(document_id: int, queue_id: int) -> None:
             
             # Update process end time
             queue_item = crud.queue.update_process_end_time(db, queue_id=queue_id)
+            
+            db_end = time.time()
+            db_time = db_end - db_start + db_operation_time
+            
+            # Update the db_operation_time field after creation
+            db.query(models.ProcessingResult).filter(models.ProcessingResult.id == result.id).update(
+                {"db_operation_time": db_time}
+            )
+            db.commit()
             
             logger.info(f"Document {document_id} processing completed successfully")
             

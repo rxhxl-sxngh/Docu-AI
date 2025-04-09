@@ -21,6 +21,12 @@ class ProcessingResult(Base):
     # Processing metadata
     confidence_score = Column(Float, default=0.0)
     processing_time = Column(Float, nullable=True)  # in seconds
+    
+    # Detailed processing time fields
+    ocr_time = Column(Float, nullable=True)  # Time spent on text recognition and extraction
+    nlp_extraction_time = Column(Float, nullable=True)  # Time spent on NLP entity extraction
+    db_operation_time = Column(Float, nullable=True)  # Time spent on database operations
+    
     raw_extraction_data = Column(JSON, nullable=True)  # Store the raw extraction data
     
     # Status and validation

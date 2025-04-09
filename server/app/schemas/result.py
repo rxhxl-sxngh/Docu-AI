@@ -14,6 +14,12 @@ class ResultBase(BaseModel):
     total_amount: Optional[float] = None
     confidence_score: float = 0.0
     processing_time: Optional[float] = None
+    
+    # Detailed processing time fields
+    ocr_time: Optional[float] = None  # Time spent on text recognition
+    nlp_extraction_time: Optional[float] = None  # Time spent on NLP entity extraction
+    db_operation_time: Optional[float] = None  # Time spent on database operations
+    
     status: str = "pending_validation"
 
 

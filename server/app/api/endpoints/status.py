@@ -1,8 +1,9 @@
 # server/app/api/endpoints/status.py
-from typing import Any, Dict
+from typing import Any, Dict, List
 
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
+from sqlalchemy import func
 
 from app import crud, models
 from app.api import deps
@@ -179,4 +180,123 @@ def get_processing_stats(
                 for res in recent_results
             ]
         }
+    }
+
+@router.get("/processing_metrics", response_model=Dict[str, Any])
+def get_processing_metrics(
+    db: Session = Depends(deps.get_db),
+    current_user: models.User = Depends(deps.get_current_active_user),
+) -> Any:
+    """
+    Get detailed processing metrics for visualization.
+    Returns average time spent in each processing stage and overall metrics.
+    """
+    # Different results for admin vs regular users
+    if crud.user.is_superuser(current_user):
+        # Admin sees all results
+        results = db.query(models.ProcessingResult).all()
+    else:
+        # Regular user only sees their results
+        results = db.query(models.ProcessingResult).join(
+            models.Document,
+            models.ProcessingResult.document_id == models.Document.id
+        ).filter(models.Document.uploaded_by == current_user.id).all()
+    
+    # Initialize metrics storage
+    metrics = {
+        "processing_time": {
+            "ocr_time": 0,  # Text recognition time
+            "nlp_extraction_time": 0,  # NLP entity extraction time
+            "db_operation_time": 0,  # Database operations time
+            "total_time": 0
+        },
+        "accuracy": {
+            "avg_confidence": 0,
+            "confidence_by_document_type": {} # For future use
+        },
+        "historical_data": get_historical_processing_data(db, current_user),
+        "error_distribution": get_error_distribution(db, current_user)
+    }
+    
+    if not results:
+        return metrics
+    
+    # Calculate averages for time metrics
+    ocr_times = [r.ocr_time for r in results if r.ocr_time is not None]
+    nlp_extraction_times = [r.nlp_extraction_time for r in results if r.nlp_extraction_time is not None]
+    db_operation_times = [r.db_operation_time for r in results if r.db_operation_time is not None]
+    total_times = [r.processing_time for r in results if r.processing_time is not None]
+    
+    confidence_scores = [r.confidence_score for r in results if r.confidence_score is not None]
+    
+    # Calculate averages (safely handle empty lists)
+    metrics["processing_time"]["ocr_time"] = safe_average(ocr_times)
+    metrics["processing_time"]["nlp_extraction_time"] = safe_average(nlp_extraction_times)
+    metrics["processing_time"]["db_operation_time"] = safe_average(db_operation_times)
+    metrics["processing_time"]["total_time"] = safe_average(total_times)
+    
+    metrics["accuracy"]["avg_confidence"] = safe_average(confidence_scores)
+    
+    return metrics
+
+def safe_average(values):
+    """Calculate average safely, handling empty lists"""
+    if not values:
+        return 0
+    return sum(values) / len(values)
+
+def get_historical_processing_data(db, current_user):
+    """Get historical processing data for the last 7 days"""
+    from datetime import datetime, timedelta
+    
+    # Get today's date and the date 7 days ago
+    end_date = datetime.now()
+    start_date = end_date - timedelta(days=7)
+    
+    # Query to get counts by day
+    query = db.query(
+        func.date_trunc('day', models.ProcessingResult.created_date).label('day'),
+        func.count().label('count')
+    )
+    
+    # Filter by user if not superuser
+    if not crud.user.is_superuser(current_user):
+        query = query.join(
+            models.Document,
+            models.ProcessingResult.document_id == models.Document.id
+        ).filter(models.Document.uploaded_by == current_user.id)
+    
+    # Complete the query with grouping and date filtering
+    results = query.filter(
+        models.ProcessingResult.created_date >= start_date,
+        models.ProcessingResult.created_date <= end_date
+    ).group_by(func.date_trunc('day', models.ProcessingResult.created_date)).all()
+    
+    # Transform results into the expected format
+    days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+    historical_data = []
+    
+    # Initialize with zeros
+    day_counts = {day: 0 for day in days}
+    
+    # Fill in actual values
+    for day, count in results:
+        day_name = days[day.weekday()]
+        day_counts[day_name] = count
+    
+    # Convert to list format
+    for day in days:
+        historical_data.append({"name": day, "volume": day_counts[day]})
+    
+    return historical_data
+
+def get_error_distribution(db, current_user):
+    """Get error distribution data"""
+    # In a real application, you would analyze error types
+    # For now, return sample data
+    return {
+        "format_errors": 0.5,
+        "ocr_issues": 0.4,
+        "classification_errors": 0.2,
+        "other": 0.1
     }
