@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react';
 import dashboardService from '../services/dashboardService';
 import documentService from '../services/documentService';
 import DashboardCharts from './DashboardCharts';
+import { logout, getToken, setToken, isAuthenticated } from '../services/authService.js';
 
 function Dashboard() {
     // State for dashboard data
@@ -83,6 +84,11 @@ function Dashboard() {
             setError(null);
             
             try {
+                if(isAuthenticated()) {
+                    setToken(getToken());
+                } else {
+                    throw new Error("User is not authenticated");
+                }
                 // Fetch processing stats
                 const rawStatsData = await dashboardService.getProcessingStats();
                 logApiResponse(rawStatsData, 'stats');
@@ -104,6 +110,7 @@ function Dashboard() {
             } catch (err) {
                 console.error('Error fetching dashboard data:', err);
                 setError(`Failed to load dashboard data: ${err.message}`);
+                logout();
             } finally {
                 setIsLoading(false);
             }

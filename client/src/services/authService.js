@@ -47,10 +47,11 @@ export const isAuthenticated = () => {
 export const logout = async () => {
   try {
     // Call logout endpoint if it exists
-    await apiClient.post('/api/v1/auth/logout', {}, false).catch(() => {
-      // Ignore errors from logout endpoint - we still want to remove the token
-      console.log("Logout endpoint not available, clearing token locally");
-    });
+    console.log("Logging out, clearing token locally");
+    // await apiClient.post('/api/v1/auth/logout', {}, false).catch(() => {
+    //   // Ignore errors from logout endpoint - we still want to remove the token
+    //   console.log("Logout endpoint not available, clearing token locally");
+    // });
   } finally {
     // Always remove token regardless of API response and send them back to login window
     removeToken();
