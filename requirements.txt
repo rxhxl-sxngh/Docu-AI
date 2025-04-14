@@ -17,3 +17,4 @@ email-validator>=2.0.0
 tenacity>=8.2.2
 pydantic-settings>=2.0.0
 setuptools>=42.0.0
+transformer>=4.51.3
