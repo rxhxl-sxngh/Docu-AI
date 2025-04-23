@@ -2,6 +2,7 @@
 import logging
 from typing import Dict, List, Any, Optional
 import re
+import time
 from datetime import datetime
 
 from app.services.ocr_service import ocr_service
@@ -175,6 +176,8 @@ class AIService:
         # Extract line items (simplified approach)
         # This is a basic implementation that could be improved
         self._extract_line_items(ocr_result, extracted_data)
+
+        time.sleep(1)
         
         return extracted_data
     
