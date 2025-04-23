@@ -1,6 +1,7 @@
 // File: client/src/upload/UploadArea.jsx
 import React, { useState, useRef } from 'react';
 import documentService from '../services/documentService';
+import eventBus from '../services/eventService';
 
 function UploadArea() {
     const [selectedFiles, setSelectedFiles] = useState([]);
@@ -104,6 +105,12 @@ function UploadArea() {
                 // Notify user of success
                 if (failures.length === 0) {
                     alert(`Successfully uploaded ${selectedFiles.length} file(s)`);
+                    
+                    // Publish document-uploaded event to notify dashboard
+                    eventBus.publish('document-uploaded', {
+                        count: selectedFiles.length,
+                        timestamp: new Date()
+                    });
                 }
             }
         } catch (error) {

@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import dashboardService from '../services/dashboardService';
 import documentService from '../services/documentService';
+import eventBus from '../services/eventService';
 import DashboardCharts from './DashboardCharts';
 import { logout, getToken, setToken, isAuthenticated } from '../services/authService.js';
 
@@ -78,50 +79,57 @@ function Dashboard() {
     };
 
     // Fetch dashboard data from API
-    useEffect(() => {
-        const fetchDashboardData = async () => {
-            setIsLoading(true);
-            setError(null);
-            
-            try {
-                if(isAuthenticated()) {
-                    setToken(getToken());
-                } else {
-                    throw new Error("User is not authenticated");
-                }
-                // Fetch processing stats
-                const rawStatsData = await dashboardService.getProcessingStats();
-                logApiResponse(rawStatsData, 'stats');
-                
-                // Process the stats to ensure expected structure
-                const processedStats = processStatsData(rawStatsData);
-                setStats(processedStats);
-                
-                // Fetch recent documents for the activity table
-                const documents = await documentService.getDocuments(0, 5);
-                logApiResponse(documents, 'documents');
-                setRecentDocuments(documents || []);
-                
-                // Get processing metrics for charts
-                const metricsData = await dashboardService.getProcessingMetrics();
-                logApiResponse(metricsData, 'metrics');
-                setProcessingTimeData(metricsData.processingTime || processingTimeData);
-                
-            } catch (err) {
-                console.error('Error fetching dashboard data:', err);
-                setError(`Failed to load dashboard data: ${err.message}`);
-                logout();
-            } finally {
-                setIsLoading(false);
-            }
-        };
+    const fetchDashboardData = async () => {
+        setIsLoading(true);
+        setError(null);
         
+        try {
+            if(isAuthenticated()) {
+                setToken(getToken());
+            } else {
+                throw new Error("User is not authenticated");
+            }
+            // Fetch processing stats
+            const rawStatsData = await dashboardService.getProcessingStats();
+            logApiResponse(rawStatsData, 'stats');
+            
+            // Process the stats to ensure expected structure
+            const processedStats = processStatsData(rawStatsData);
+            setStats(processedStats);
+            
+            // Fetch recent documents for the activity table
+            const documents = await documentService.getDocuments(0, 5);
+            logApiResponse(documents, 'documents');
+            setRecentDocuments(documents || []);
+            
+            // Get processing metrics for charts
+            const metricsData = await dashboardService.getProcessingMetrics();
+            logApiResponse(metricsData, 'metrics');
+            setProcessingTimeData(metricsData.processingTime || processingTimeData);
+            
+        } catch (err) {
+            console.error('Error fetching dashboard data:', err);
+            setError(`Failed to load dashboard data: ${err.message}`);
+            logout();
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    // Initial data fetch
+    useEffect(() => {
         fetchDashboardData();
         
-        // Refresh dashboard data every 30 seconds
-        const intervalId = setInterval(fetchDashboardData, 30000);
+        // Set up event listener for document-uploaded events
+        const unsubscribe = eventBus.subscribe('document-uploaded', () => {
+            console.log('Document uploaded, refreshing dashboard data');
+            fetchDashboardData();
+        });
         
-        return () => clearInterval(intervalId);
+        // Cleanup function to remove event listener
+        return () => {
+            unsubscribe();
+        };
     }, []);
 
     // Function to format timestamps

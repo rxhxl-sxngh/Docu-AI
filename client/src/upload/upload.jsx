@@ -13,10 +13,10 @@ function Upload() {
                 </div>
 
                 {/*<!-- Upload Area -->*/}
-                <UploadArea/>
+                <UploadArea />
 
                 {/*<!-- Upload Queue -->*/}
-                <UploadQueue/>
+                <UploadQueue />
             </div>
         </section>
     )
@@ -84,7 +84,7 @@ function UploadQueue(){
             </div>
 
             {/*<!-- Upload Actions -->*/}
-            <UploadActions/>
+            <UploadActions />
             
         </div>
     )
