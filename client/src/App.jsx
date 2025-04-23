@@ -33,8 +33,8 @@ function MainContent() {
         <Queue />
         <Results />
         <Logs />
-        <Analytics />
-        <SystemSettings />
+        {/* <Analytics /> */}
+        {/* <SystemSettings /> */}
         <UserManagement />
       </main>
     </div>
