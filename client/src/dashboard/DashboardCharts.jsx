@@ -20,11 +20,20 @@ export const ProcessingTimeChart = ({ data }) => {
       <ResponsiveContainer width="100%" height="100%">
         <BarChart
           data={chartData}
-          margin={{ top: 20, right: 10, left: 10, bottom: 20 }}
+          margin={{ top: 20, right: 30, left: 50, bottom: 20 }}
         >
           <CartesianGrid strokeDasharray="3 3" />
           <XAxis dataKey="name" tick={{ fontSize: 10 }} angle={-45} textAnchor="end" height={80} />
-          <YAxis label={{ value: 'Time (seconds)', angle: -90, position: 'inside' }} />
+          <YAxis 
+            label={{ 
+              value: 'Time (seconds)', 
+              angle: -90, 
+              position: 'insideLeft',
+              dx: -40,  // Move label further left
+              dy: 50    // Center the label vertically
+            }} 
+            tickFormatter={(value) => value.toFixed(2)}  // Format tick values to 2 decimal places
+          />
           <Tooltip 
             formatter={(value) => [`${value.toFixed(3)} sec (${((value/totalTime)*100).toFixed(1)}%)`, 'Processing Time']} 
           />
@@ -136,15 +145,15 @@ export const ProcessingVolumeChart = ({ data }) => {
 // Dashboard Charts Container Component
 const DashboardCharts = ({ processingMetrics }) => {
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-      <div className="bg-white p-6 rounded-lg border border-neutral-200/30">
+    <div className="w-full">
+      <div className="w-full bg-white p-6 rounded-lg border border-neutral-200/30">
         <h2 className="text-lg font-semibold text-neutral-800 mb-4">Processing Time Distribution</h2>
         <ProcessingTimeChart data={processingMetrics} />
       </div>
-      <div className="bg-white p-6 rounded-lg border border-neutral-200/30">
+      {/* <div className="bg-white p-6 rounded-lg border border-neutral-200/30">
         <h2 className="text-lg font-semibold text-neutral-800 mb-4">Accuracy Metrics</h2>
         <AccuracyMetricsChart data={processingMetrics} />
-      </div>
+      </div> */}
     </div>
   );
 };
