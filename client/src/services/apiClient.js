@@ -29,14 +29,14 @@ const apiClient = {
         credentials: 'include',
         mode: 'cors'
       });
-      
+
       return handleResponse(response);
     } catch (error) {
       console.error(`GET request to ${url} failed:`, error);
       throw new Error(`Network error: ${error.message}`);
     }
   },
-  
+
   /**
    * Make a POST request
    * @param {string} url - The endpoint URL (without base)
@@ -57,14 +57,14 @@ const apiClient = {
         mode: 'cors',
         body: JSON.stringify(data)
       });
-      
+
       return handleResponse(response);
     } catch (error) {
       console.error(`POST request to ${url} failed:`, error);
       throw new Error(`Network error: ${error.message}`);
     }
   },
-  
+
   /**
    * Upload a file with form data
    * @param {string} url - The endpoint URL (without base)
@@ -85,14 +85,14 @@ const apiClient = {
         mode: 'cors',
         body: formData
       });
-      
+
       return handleResponse(response);
     } catch (error) {
       console.error(`File upload to ${url} failed:`, error);
       throw new Error(`Network error: ${error.message}`);
     }
   },
-  
+
   /**
    * Make a form POST request (for login)
    * @param {string} url - The endpoint URL (without base)
@@ -111,42 +111,48 @@ const apiClient = {
         mode: 'cors',
         body: new URLSearchParams(data)
       });
-      
+
       return handleResponse(response);
     } catch (error) {
       console.error(`Form POST request to ${url} failed:`, error);
       throw new Error(`Network error: ${error.message}`);
     }
   },
-  
+
   /**
-   * Make a PUT request
-   * @param {string} url - The endpoint URL (without base)
-   * @param {object} data - The data to send
-   * @param {boolean} auth - Whether to include auth header
-   * @returns {Promise<any>} - Response data
-   */
-  async put(url, data, auth = true) {
+     * Make a PUT request
+     * @param {string} url - The endpoint URL (without base)
+     * @param {object} data - The data to send (optional)
+     * @param {boolean} auth - Whether to include auth header
+     * @returns {Promise<any>} - Response data
+     */
+  async put(url, data = null, auth = true) {
     try {
-      const response = await fetch(`${API_BASE_URL}${url}`, {
+      const options = {
         method: 'PUT',
         headers: {
-          'Content-Type': 'application/json',
           'Accept': 'application/json',
           ...(auth ? authHeader() : {})
         },
         credentials: 'include',
-        mode: 'cors',
-        body: JSON.stringify(data)
-      });
-      
+        mode: 'cors'
+      };
+
+      // Only add Content-Type and body if data is provided
+      if (data !== null) {
+        options.headers['Content-Type'] = 'application/json';
+        options.body = JSON.stringify(data);
+      }
+
+      const response = await fetch(`${API_BASE_URL}${url}`, options);
+
       return handleResponse(response);
     } catch (error) {
       console.error(`PUT request to ${url} failed:`, error);
       throw new Error(`Network error: ${error.message}`);
     }
   },
-  
+
   /**
    * Make a DELETE request
    * @param {string} url - The endpoint URL (without base)
@@ -164,7 +170,7 @@ const apiClient = {
         credentials: 'include',
         mode: 'cors'
       });
-      
+
       return handleResponse(response);
     } catch (error) {
       console.error(`DELETE request to ${url} failed:`, error);
@@ -186,29 +192,29 @@ async function handleResponse(response) {
     logout();
     throw new Error('Your session has expired. Please log in again.');
   }
-  
+
   try {
     // Check if response is JSON
     const contentType = response.headers.get('content-type');
-    
+
     if (contentType && contentType.includes('application/json')) {
       const data = await response.json();
-      
+
       if (!response.ok) {
         // API error with details
         const errorMessage = data.detail || response.statusText;
         throw new Error(errorMessage);
       }
-      
+
       return data;
     } else {
       // Handle non-JSON responses
       const text = await response.text();
-      
+
       if (!response.ok) {
         throw new Error(`Server returned ${response.status}: ${response.statusText}`);
       }
-      
+
       return text;
     }
   } catch (error) {

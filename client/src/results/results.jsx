@@ -1,6 +1,7 @@
 // client/src/results/results.jsx
 import React, { useState, useEffect } from 'react';
 import documentService from '../services/documentService';
+import resultService from '../services/resultService';
 import apiClient from '../services/apiClient';
 import { useLocation } from 'react-router-dom';
 
@@ -179,10 +180,13 @@ const DocumentPreview = ({ documentId, documentUrl }) => {
 
 // Confidence Score Component
 const ConfidenceScore = ({ score }) => {
-  // Determine color based on score
+  // Convert decimal to percentage and round to nearest integer
+  const percentage = Math.round((score * 100) || 0);
+  
+  // Determine color based on percentage
   let colorClass = "green";
-  if (score < 70) colorClass = "red";
-  else if (score < 90) colorClass = "yellow";
+  if (percentage < 70) colorClass = "red";
+  else if (percentage < 90) colorClass = "yellow";
 
   return (
     <div className={`p-3 bg-${colorClass}-50 rounded-lg border border-${colorClass}-200`}>
@@ -190,7 +194,7 @@ const ConfidenceScore = ({ score }) => {
         <svg className={`w-5 h-5 text-${colorClass}-500 mr-2`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
         </svg>
-        <span className={`text-sm font-medium text-${colorClass}-700`}>{score}% Confidence Score</span>
+        <span className={`text-sm font-medium text-${colorClass}-700`}>{percentage}% Confidence Score</span>
       </div>
     </div>
   );
@@ -397,7 +401,30 @@ const ExtractedInformation = ({
           {/* Processing Status */}
           <div className="mt-4 py-2 px-3 bg-neutral-100 rounded-lg text-sm text-neutral-700">
             <span className="font-medium">Status: </span>
-            {extractedData?.status || 'Pending Validation'}
+            {extractedData?.status === 'validated' ? 'Approved' : 
+             extractedData?.status === 'rejected' ? 'Rejected' : 
+             'Pending Validation'}
+            
+            {extractedData?.validated_by && (
+              <div className="mt-2">
+                <span className="font-medium">Validated by: </span>
+                User ID: {extractedData.validated_by}
+              </div>
+            )}
+            
+            {extractedData?.validated_date && (
+              <div className="mt-1">
+                <span className="font-medium">Validated on: </span>
+                {new Date(extractedData.validated_date).toLocaleString()}
+              </div>
+            )}
+            
+            {extractedData?.validation_notes && (
+              <div className="mt-1">
+                <span className="font-medium">Notes: </span>
+                {extractedData.validation_notes}
+              </div>
+            )}
           </div>
 
           {/* Action Buttons */}
@@ -547,11 +574,12 @@ const Results = () => {
     
     setIsLoading(true);
     try {
-      // Assuming there's an API to validate results
-      // You would need to implement the corresponding service function
-      // await resultService.validateResult(extractedData.id, 'validated', data);
+      // Call the API to validate the result
+      const validatedResult = await resultService.validateResult(extractedData.id, 'validated');
       
-      // For demonstration, we'll just show a success message
+      // Update the local state with the validated result
+      setExtractedData(validatedResult);
+      
       setToastMessage('Document extraction results approved successfully!');
       setShowToast(true);
     } catch (error) {
@@ -569,10 +597,12 @@ const Results = () => {
     
     setIsLoading(true);
     try {
-      // Assuming there's an API to request review
-      // await resultService.validateResult(extractedData.id, 'review_requested', data);
+      // Call the API to request review
+      const reviewResult = await resultService.validateResult(extractedData.id, 'rejected', 'Review requested');
       
-      // For demonstration, we'll just show a success message
+      // Update the local state with the updated result
+      setExtractedData(reviewResult);
+      
       setToastMessage('Review requested successfully!');
       setShowToast(true);
     } catch (error) {

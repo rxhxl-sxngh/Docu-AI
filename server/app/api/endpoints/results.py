@@ -1,7 +1,7 @@
 from typing import Any, List
 from datetime import datetime
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Body
 from sqlalchemy.orm import Session
 
 from app import crud, models, schemas
@@ -83,13 +83,18 @@ def validate_result(
     *,
     db: Session = Depends(deps.get_db),
     id: int,
-    status: str,
-    notes: str = None,
+    data: dict = Body(...),  # Receive data as a JSON body
     current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
     """
     Validate a processing result.
     """
+    status = data.get("status")
+    notes = data.get("notes")
+    
+    if not status:
+        raise HTTPException(status_code=400, detail="Status is required")
+        
     result = crud.result.get(db=db, id=id)
     if not result:
         raise HTTPException(status_code=404, detail="Result not found")
@@ -104,6 +109,7 @@ def validate_result(
     if status not in ["validated", "rejected"]:
         raise HTTPException(status_code=400, detail="Invalid status value")
     
+    # Always use current user's ID as validator
     result = crud.result.validate_result(
         db=db, 
         result_id=id, 
@@ -111,6 +117,9 @@ def validate_result(
         status=status, 
         notes=notes
     )
+    
+    # Make sure the result is returned with the validator information
+    db.refresh(result)
     
     return result
 
