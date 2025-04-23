@@ -32,7 +32,7 @@ function MainContent() {
         <Upload />
         <Queue />
         <Results />
-        <Logs />
+        {/* <Logs /> */}
         {/* <Analytics /> */}
         {/* <SystemSettings /> */}
         <UserManagement />
