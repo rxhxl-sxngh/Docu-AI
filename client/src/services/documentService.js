@@ -13,10 +13,10 @@ const documentService = {
   async uploadDocument(file) {
     const formData = new FormData();
     formData.append('file', file);
-    
+
     return apiClient.uploadFile('/api/v1/documents', formData);
   },
-  
+
   /**
    * Get all documents
    * @param {number} skip - Number of items to skip
@@ -26,7 +26,7 @@ const documentService = {
   async getDocuments(skip = 0, limit = 100000) {
     return apiClient.get(`/api/v1/documents?skip=${skip}&limit=${limit}`);
   },
-  
+
   /**
    * Get document by ID
    * @param {number} id - Document ID
@@ -35,7 +35,7 @@ const documentService = {
   async getDocumentById(id) {
     return apiClient.get(`/api/v1/documents/${id}`);
   },
-  
+
   /**
    * Download document
    * @param {number} id - Document ID
@@ -48,14 +48,14 @@ const documentService = {
       headers: apiClient.getAuthHeader(),
       credentials: 'include',
     });
-    
+
     if (!response.ok) {
       throw new Error(`Error downloading document: ${response.statusText}`);
     }
-    
+
     return response.blob();
   },
-  
+
   /**
    * Delete document
    * @param {number} id - Document ID
@@ -64,7 +64,17 @@ const documentService = {
   async deleteDocument(id) {
     return apiClient.delete(`/api/v1/documents/${id}`);
   },
-  
+
+  /**
+   * Process document
+   * @param {number} id - Document ID
+   * @param {number} priority - Processing priority (1-5)
+   * @returns {Promise<any>} - Response data
+   */
+  async processDocument(id, priority = 1) {
+    return apiClient.post(`/api/v1/documents/${id}/process`, { priority });
+  },
+
   /**
    * Reprocess document
    * @param {number} id - Document ID
@@ -74,7 +84,7 @@ const documentService = {
   async reprocessDocument(id, priority = 1) {
     return apiClient.post(`/api/v1/documents/${id}/reprocess`, { priority });
   },
-  
+
   /**
    * Get document status
    * @param {number} id - Document ID
@@ -83,7 +93,7 @@ const documentService = {
   async getDocumentStatus(id) {
     return apiClient.get(`/api/v1/status/document/${id}`);
   },
-  
+
   /**
    * Get results for a document
    * @param {number} documentId - Document ID

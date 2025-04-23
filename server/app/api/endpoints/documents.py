@@ -23,13 +23,12 @@ os.makedirs(UPLOAD_DIR, exist_ok=True)
 @router.post("/", response_model=schemas.Document)
 async def upload_document(
     *,
-    background_tasks: BackgroundTasks,
     file: UploadFile = File(...),
     db: Session = Depends(deps.get_db),
     current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
     """
-    Upload a new document and add it to the processing queue.
+    Upload a new document and add it to the processing queue without starting processing.
     """
     # Validate file type
     if file.content_type != "application/pdf":
@@ -68,7 +67,7 @@ async def upload_document(
             obj_in={"file_path": file_path, "file_size": file_size}
         )
         
-        # Add to processing queue
+        # Add to processing queue (but don't start processing)
         queue_in = schemas.QueueCreate(
             document_id=document.id,
             status="pending",
@@ -76,12 +75,7 @@ async def upload_document(
         )
         queue_item = crud.queue.create(db=db, obj_in=queue_in)
         
-        # Start processing in the background
-        background_tasks.add_task(
-            process_document_task,
-            document_id=document.id,
-            queue_id=queue_item.id
-        )
+        # Note: We're NOT starting the background task here anymore
         
         return document
         
@@ -208,6 +202,60 @@ def update_document(
     return document
 
 
+@router.post("/{id}/process", response_model=schemas.Document)
+def process_document(
+    *,
+    db: Session = Depends(deps.get_db),
+    id: int,
+    priority: int = 1,
+    background_tasks: BackgroundTasks,
+    current_user: models.User = Depends(deps.get_current_active_user),
+) -> Any:
+    """
+    Start processing a document that's already in the queue.
+    """
+    document = crud.document.get(db=db, id=id)
+    if not document:
+        raise HTTPException(status_code=404, detail="Document not found")
+    
+    if not crud.user.is_superuser(current_user) and document.uploaded_by != current_user.id:
+        raise HTTPException(status_code=400, detail="Not enough permissions")
+    
+    # Check if document is already processed
+    if document.status == "processed":
+        return document
+    
+    # Get latest queue item for this document
+    queue_items = crud.queue.get_by_document(db=db, document_id=id)
+    
+    if not queue_items:
+        # Create a new queue item if none exists
+        queue_in = schemas.QueueCreate(
+            document_id=document.id,
+            status="pending",
+            priority=priority
+        )
+        queue_item = crud.queue.create(db=db, obj_in=queue_in)
+    else:
+        # Use the latest queue item
+        queue_item = queue_items[0]
+        # Update status if it's not pending
+        if queue_item.status != "pending":
+            queue_item = crud.queue.update_status(db=db, queue_id=queue_item.id, status="pending")
+    
+    # Update document status
+    document = crud.document.update_status(db=db, document_id=id, status="pending")
+    
+    # Start processing in the background
+    background_tasks.add_task(
+        process_document_task,
+        document_id=document.id,
+        queue_id=queue_item.id
+    )
+    
+    return document
+
+
 @router.post("/{id}/reprocess", response_model=schemas.Document)
 def reprocess_document(
     *,
@@ -218,7 +266,7 @@ def reprocess_document(
     current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
     """
-    Reprocess a document (add it to the queue again).
+    Reset a document for processing and start processing immediately.
     """
     document = crud.document.get(db=db, id=id)
     if not document:

@@ -21,7 +21,7 @@ def create_queue_item(
     current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
     """
-    Create new queue item and start processing.
+    Create new queue item without starting processing.
     """
     document = crud.document.get(db=db, id=item_in.document_id)
     if not document:
@@ -34,12 +34,7 @@ def create_queue_item(
     # Create queue item
     queue_item = crud.queue.create(db=db, obj_in=item_in)
     
-    # Start background processing task
-    background_tasks.add_task(
-        process_document_task,
-        document_id=document.id,
-        queue_id=queue_item.id
-    )
+    # No background processing task is started
     
     return queue_item
 
@@ -84,6 +79,47 @@ def read_queue_item(
     
     if not crud.user.is_superuser(current_user) and document.uploaded_by != current_user.id:
         raise HTTPException(status_code=403, detail="Not enough permissions")
+    
+    return queue_item
+
+
+@router.post("/{id}/process", response_model=schemas.Queue)
+def process_queue_item(
+    *,
+    db: Session = Depends(deps.get_db),
+    id: int,
+    background_tasks: BackgroundTasks,
+    current_user: models.User = Depends(deps.get_current_active_user),
+) -> Any:
+    """
+    Process a queue item.
+    """
+    queue_item = crud.queue.get(db=db, id=id)
+    if not queue_item:
+        raise HTTPException(status_code=404, detail="Queue item not found")
+    
+    document = crud.document.get(db=db, id=queue_item.document_id)
+    if not document:
+        raise HTTPException(status_code=404, detail="Document not found")
+    
+    if not crud.user.is_superuser(current_user) and document.uploaded_by != current_user.id:
+        raise HTTPException(status_code=403, detail="Not enough permissions")
+    
+    # Only process if not already processing
+    if queue_item.status not in ["processing", "completed"]:
+        # Reset queue item status
+        queue_item = crud.queue.update_status(db, queue_id=id, status="pending")
+        
+        # Reset document status if needed
+        if document.status not in ["processing", "processed"]:
+            document = crud.document.update_status(db, document_id=document.id, status="pending")
+        
+        # Start background processing task
+        background_tasks.add_task(
+            process_document_task,
+            document_id=document.id,
+            queue_id=queue_item.id
+        )
     
     return queue_item
 
